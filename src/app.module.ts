@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CategoryModule } from './category/category.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
@@ -14,7 +15,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         authSource: configService.get<string>('MONGODB_AUTH_SOURCE'), 
       }),
       inject: [ConfigService],
-    })],
+    }),
+    CategoryModule],
   controllers: [],
   providers: [],
 })
