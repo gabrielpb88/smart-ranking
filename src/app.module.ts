@@ -11,7 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         uri: configService.get<string>('MONGODB_URI'),
         user: configService.get<string>('MONGODB_USER'),
         pass: configService.get<string>('MONGODB_PASS'),
-        authSource: configService.get<string>('MONGODB_AUTH_SOURCE')
+        authSource: configService.get<string>('MONGODB_AUTH_SOURCE'), 
       }),
       inject: [ConfigService],
     })],
