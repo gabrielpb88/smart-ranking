@@ -3,6 +3,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from './interface/category.interface';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -37,6 +38,15 @@ export class CategoryService {
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`)
       throw new Error(error.message)
+    }
+  }
+
+  async updateCategory(_id: string, category: Category): Promise<void> {
+    try {
+      await this.categoryModel.findOneAndUpdate({ _id }, { $set: category }).exec() 
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error.message)}`)
+      throw new Error(error.message)      
     }
   }
 }
