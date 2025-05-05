@@ -1,12 +1,24 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Category } from './interface/category.interface';
 
 @Injectable()
 export class CategoryService {
   logger = new Logger(CategoryService.name)
 
-  create(createCategoryDto: CreateCategoryDto) {
+  constructor(@InjectModel('Category') private readonly categoryModel: Model<Category>){}
+
+  async create(createCategoryDto: CreateCategoryDto): Promise<void> {
     this.logger.log(`data: ${JSON.stringify(createCategoryDto)}`)
-    return 'This action adds a new category';
+
+    try {
+      const categoryCreated = await this.categoryModel.create(createCategoryDto)
+      await categoryCreated.save()
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error)}`)
+      throw new Error(error.message)
+    }
   }
 }
