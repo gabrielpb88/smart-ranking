@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, ValidationPipe, UsePipes } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy';
 import { ClientProxy } from '@nestjs/microservices';
@@ -20,8 +20,8 @@ export class CategoryController {
   }
 
   @Get()
-  findAll(): Observable<any> {
-    return this.clientProxy.send('find-category', '')
+  findAll(@Query('idCategory') _id: string): Observable<any> {
+    return this.clientProxy.send('find-category', _id ? _id : '')
   }
 
 }
