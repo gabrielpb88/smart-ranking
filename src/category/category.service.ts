@@ -30,4 +30,13 @@ export class CategoryService {
       throw new Error(error.message)
     }
   }
+
+  async findById(_id: string): Promise<Category | null> {
+    try {
+      return this.categoryModel.findById(_id)
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error.message)}`)
+      throw new Error(error.message)
+    }
+  }
 }

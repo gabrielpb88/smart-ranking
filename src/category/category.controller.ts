@@ -29,14 +29,18 @@ export class CategoryController {
   }
 
   @MessagePattern('find-category')
-  async findAll(@Ctx() ctx: RmqContext) {
+  async findAll(@Payload() _id: string, @Ctx() ctx: RmqContext) {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
     let result
 
     try {
-      result = this.categoryService.findAll();
+      if(_id) {
+        result = this.categoryService.findById(_id);
+      } else {
+        result = this.categoryService.findAll();
+      }
       await channel.ack(originalMessage)
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
