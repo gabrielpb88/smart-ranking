@@ -21,4 +21,13 @@ export class CategoryService {
       throw new Error(error.message)
     }
   }
+
+  async findAll(): Promise<Category[]> {
+    try {
+      return this.categoryModel.find().exec()
+    } catch (error) {
+      this.logger.error(`error: ${JSON.stringify(error.message)}`)
+      throw new Error(error.message)
+    }
+  }
 }

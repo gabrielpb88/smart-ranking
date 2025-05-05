@@ -27,4 +27,22 @@ export class CategoryController {
       await channel.nack(originalMessage, false, false);
     }
   }
+
+  @MessagePattern('find-category')
+  async findAll(@Ctx() ctx: RmqContext) {
+    const channel = ctx.getChannelRef();
+    const originalMessage = ctx.getMessage();
+
+    let result
+
+    try {
+      result = this.categoryService.findAll();
+      await channel.ack(originalMessage)
+    } catch (error) {
+      this.logger.error(`Error processing message: ${error.message}`);
+      await channel.nack(originalMessage, false, false);
+    } finally {
+      return result
+    }
+  }
 }
