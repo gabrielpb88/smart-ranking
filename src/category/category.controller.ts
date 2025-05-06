@@ -1,9 +1,8 @@
 import { Controller, UsePipes, ValidationPipe } from '@nestjs/common';
-import { Payload, RmqContext, Ctx, MessagePattern } from '@nestjs/microservices';
+import { Payload, RmqContext, Ctx, MessagePattern, RpcException } from '@nestjs/microservices';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Logger } from '@nestjs/common';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category } from './interface/category.interface';
 
 @Controller()
@@ -39,16 +38,16 @@ export class CategoryController {
 
     try {
       if(_id) {
-        result = this.categoryService.findById(_id);
+        result = await this.categoryService.findById(_id);
       } else {
-        result = this.categoryService.findAll();
+        result = await this.categoryService.findAll();
       }
       await channel.ack(originalMessage)
+      return result
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
       await channel.nack(originalMessage, false, false);
-    } finally {
-      return result
+      throw new RpcException('Invalid ObjectId');
     }
   }
 
