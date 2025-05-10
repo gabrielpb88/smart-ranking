@@ -1,7 +1,8 @@
-import { Controller, UsePipes, Post, ValidationPipe, Body } from '@nestjs/common';
+import { Controller, UsePipes, Post, ValidationPipe, Body, HttpCode, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { ConfirmUserDto } from './dto/confirm-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
@@ -46,6 +47,19 @@ export class AuthController {
                 message: 'Error resending confirmation code',
                 error: error.message,
             };
+        }
+    }
+
+    @Post('/login')
+    @HttpCode(200)
+    @UsePipes(ValidationPipe)
+    async login(@Body() loginUserDto: LoginUserDto) {
+        const { email, password } = loginUserDto;
+        try {
+            const response = await this.authService.login(email, password);
+            return response
+        } catch (error) {
+            throw new UnauthorizedException('Invalid credentials');
         }
     }
 
