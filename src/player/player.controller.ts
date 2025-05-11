@@ -1,7 +1,6 @@
 import { BadRequestException, Body, Controller, Logger, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy';
 import { CreatePlayerDto } from './dto/create-player.dto';
-import { Category } from '../category/interface/category.interface';
 
 @Controller('api/v1/player')
 export class PlayerController {
