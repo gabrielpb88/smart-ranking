@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Logger, Get, Post, Query, UsePipes, ValidationPipe, Delete, Put, Param } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Logger, Get, Post, Query, UsePipes, ValidationPipe, Delete, Put, Param, UseGuards } from '@nestjs/common';
 import { ClientProxySmartRanking } from 'src/proxyrmq/client-proxy';
 import { CreatePlayerDto } from './dto/create-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('api/v1/player')
 export class PlayerController {
@@ -26,6 +27,7 @@ export class PlayerController {
     }
 
     @Get()
+    @UseGuards(AuthGuard)
     async findPlayers(@Query('_id') _id: string) {
         try {
             const res = await this.clientProxy.send('find-player', _id ? _id : '').toPromise()
@@ -48,6 +50,7 @@ export class PlayerController {
     }
 
     @Delete('/:_id')
+    @UseGuards(AuthGuard)
     async deletePlayers(@Param('_id') _id: string) {
         await this.clientProxy.emit('delete-player', _id)
     }
