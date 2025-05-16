@@ -59,6 +59,22 @@ export class PlayerController {
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error)}`)
       await channel.nack(originalMsg, false, false)
+      return null
+    }
+  }
+
+  @EventPattern('delete-player')
+  async deletePlayer(@Payload() _id: string, @Ctx() context: RmqContext): Promise<void> {
+    const channel = context.getChannelRef()
+    const originalMsg = context.getMessage()
+
+    try {
+      await this.playerService.deletePlayer(_id)
+      await channel.ack(originalMsg)
+    } catch (error) {
+      this.logger.error(`Error deleting player with id: ${_id}`)
+      await channel.nack(originalMsg, false, false)
+      throw new RpcException(error.message)
     }
   }
 }

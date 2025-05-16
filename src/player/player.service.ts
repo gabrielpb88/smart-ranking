@@ -8,7 +8,7 @@ import { isMongoId, validate } from 'class-validator';
 
 @Injectable()
 export class PlayerService {
-
+  
   private readonly logger = new Logger(PlayerService.name);
 
   constructor(@InjectModel('Player') private readonly playerModel: Model<Player>) {}
@@ -53,6 +53,13 @@ export class PlayerService {
     } catch (error) {
       this.logger.error(`Error: ${JSON.stringify(error.message)}`)
       return []
+    }
+  }
+
+  async deletePlayer(_id: string): Promise<void> {
+    const deleteResult = await this.playerModel.deleteOne({ _id }).exec()
+    if(deleteResult.deletedCount != 1) {
+      throw new Error(`Failed to delete player with id: ${_id}`)
     }
   }
 }
