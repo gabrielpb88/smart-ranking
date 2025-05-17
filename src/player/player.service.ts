@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Player } from './interface/player.interface';
 import { RpcException } from '@nestjs/microservices';
-import { isMongoId, validate } from 'class-validator';
+import { isMongoId } from 'class-validator';
 
 @Injectable()
 export class PlayerService {
@@ -13,10 +13,11 @@ export class PlayerService {
 
   constructor(@InjectModel('Player') private readonly playerModel: Model<Player>) {}
 
-  async create(createPlayerDto: CreatePlayerDto): Promise<void> {
+  async create(createPlayerDto: CreatePlayerDto): Promise<Player> {
     try {
       const newPlayer = await this.playerModel.create(createPlayerDto);
       await newPlayer.save();
+      return newPlayer
     }
     catch (error) {
       this.logger.error(`Error creating player: ${JSON.stringify(error.message)}`);
@@ -24,12 +25,13 @@ export class PlayerService {
     }
   }
 
-  async updatePlayer(_id: string, player: Player): Promise<void> {
+  async updatePlayer(_id: string, player: Player): Promise<Player | null> {
     try {
       if(!isMongoId(_id)) {
         throw new RpcException(`Invalid Id`)
       }
-      await this.playerModel.findByIdAndUpdate({ _id }, { $set: player }).exec()    
+      const updatedPlayer = await this.playerModel.findByIdAndUpdate({ _id }, { $set: player }).exec()    
+      return updatedPlayer
     } catch (error) {
       this.logger.error(`Error updating player: ${JSON.stringify(error.message)}`)
       throw new RpcException(error.message)
@@ -59,7 +61,7 @@ export class PlayerService {
   async deletePlayer(_id: string): Promise<void> {
     const deleteResult = await this.playerModel.deleteOne({ _id }).exec()
     if(deleteResult.deletedCount != 1) {
-      throw new Error(`Failed to delete player with id: ${_id}`)
+      throw new RpcException(`Failed to delete player with id: ${_id}`)
     }
   }
 }
