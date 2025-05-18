@@ -18,11 +18,7 @@ export class PlayerService {
   ) {}
 
   async create(createPlayerDto: CreatePlayerDto): Promise<Player> {
-    if(!isMongoId(createPlayerDto.category._id)){
-      const errorMessage = `Invalid category id: ${createPlayerDto.category._id}`
-      this.logger.error(errorMessage);
-      throw new RpcException(errorMessage)
-    } 
+    this.validateId(createPlayerDto.category._id, 'Invalid category id')
     
     let categoryId
     try {
@@ -47,26 +43,32 @@ export class PlayerService {
   }
 
   async updatePlayer(_id: string, player: Player): Promise<Player | null> {
+    this.validateId(_id, 'Invalid Id')
+
+    let categoryId
     try {
-      if(!isMongoId(_id)) {
-        throw new RpcException(`Invalid Id`)
-      }
-      const updatedPlayer = await this.playerModel.findByIdAndUpdate({ _id }, { $set: player }).exec()    
-      return updatedPlayer
+      categoryId = await this.categoryModel.findById(player.category._id).exec()
+    } catch (error) {
+      this.logger.error(`Error finding category: ${JSON.stringify(error.message)}`)
+      throw new RpcException(error.message)
+    }
+
+    try {
+      return await this.playerModel.findByIdAndUpdate({ _id }, { $set: player }).exec()    
     } catch (error) {
       this.logger.error(`Error updating player: ${JSON.stringify(error.message)}`)
       throw new RpcException(error.message)
     }
   }
 
-  async findPlayerById(_id: string): Promise<Player | null | undefined> {
-    if(!isMongoId(_id)) {
-      return null
-    }
+  async findPlayerById(_id: string): Promise<Player | null> {
+    this.validateId(_id, 'Invalid Player Id')
+
     try {
       return this.playerModel.findById(_id).exec()
     } catch (error) {
       this.logger.error(`Error: ${JSON.stringify(error.message)}`)
+      throw new RpcException(error.message)
     }
   }
 
@@ -75,14 +77,32 @@ export class PlayerService {
       return this.playerModel.find().exec()
     } catch (error) {
       this.logger.error(`Error: ${JSON.stringify(error.message)}`)
-      return []
+      throw new RpcException(error.message)
     }
   }
 
-  async deletePlayer(_id: string): Promise<void> {
-    const deleteResult = await this.playerModel.deleteOne({ _id }).exec()
+  async deletePlayer(_id: string): Promise<number> {
+    this.validateId(_id, 'Invalid Id Format')
+    let deleteResult
+    
+    try {
+      deleteResult = await this.playerModel.deleteOne({ _id }).exec()
+    } catch (error) {
+      this.logger.error(`Error deleting player: ${JSON.stringify(error.message)}`)
+      throw new RpcException(error.message)
+    }
+
     if(deleteResult.deletedCount != 1) {
       throw new RpcException(`Failed to delete player with id: ${_id}`)
+    }
+    
+    return deleteResult.deletedCount
+  }
+
+  protected validateId(_id: unknown, errorMessage: string): void {
+    if(!isMongoId(_id)) {
+      this.logger.error(`${errorMessage}: ${_id}`)
+      throw new RpcException(`${errorMessage}: ${_id}`)
     }
   }
 }
