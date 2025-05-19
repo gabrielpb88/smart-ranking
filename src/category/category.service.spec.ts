@@ -4,6 +4,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { Category } from './interface/category.interface';
 import { RpcException } from '@nestjs/microservices';
 import { Logger } from '@nestjs/common';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 describe('CategoryService', () => {
   let service: CategoryService;
@@ -15,7 +16,7 @@ describe('CategoryService', () => {
       create: jest.fn(),
       find: jest.fn(),
       findById: jest.fn(),
-      findOneAndUpdate: jest.fn(),
+      findByIdAndUpdate: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -77,6 +78,50 @@ describe('CategoryService', () => {
 
       expect(result).toEqual(categories);
       expect(categoryModelMock.find).toHaveBeenCalledTimes(1);
+    });
+  })
+
+  describe('findById', () => {
+    it('should throw an error if fetching category by ID fails', async () => {
+      const errorMessage = 'Error fetching category by ID';
+      categoryModelMock.findById.mockRejectedValue(new RpcException(errorMessage));
+
+      await expect(service.findById(validId)).rejects.toThrow(new RpcException(errorMessage));
+    });
+
+    it('should return a category by ID when ID is valid and found', async () => {
+      const category: Category = { _id: validId, category: 'Category 1', description: 'Description 1', events: [] } as unknown as Category;
+
+      categoryModelMock.findById.mockResolvedValue(category);
+
+      const result = await service.findById(validId);
+
+      expect(result).toEqual(category);
+      expect(categoryModelMock.findById).toHaveBeenCalledWith(validId);
+      expect(categoryModelMock.findById).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('updateCategory', () => {
+    it('should throw an error if updating category throws', async () => {
+      const errorMessage = 'Error updating category';
+      categoryModelMock.findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockRejectedValue(new RpcException(errorMessage)),
+      });
+
+      await expect(service.updateCategory({} as unknown as UpdateCategoryDto)).rejects.toThrow(new RpcException(errorMessage));
+    });
+
+    it('should update a category successfully', async () => {
+      const category = { _id: validId, category: 'Category 1', description: 'Description 1', events: [] };
+      categoryModelMock.findByIdAndUpdate.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(true),
+      });
+
+      await service.updateCategory(category);
+
+      expect(categoryModelMock.findByIdAndUpdate).toHaveBeenCalledWith({ _id: validId }, { $set: category });
+      expect(categoryModelMock.findByIdAndUpdate).toHaveBeenCalledTimes(1);
     });
   })
 });

@@ -4,6 +4,8 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Logger } from '@nestjs/common';
 import { Category } from './interface/category.interface';
+import { IdValidationPipe } from 'src/common/pipes/id-validation.pipe';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller()
 export class CategoryController {
@@ -30,7 +32,7 @@ export class CategoryController {
   }
 
   @MessagePattern('find-category')
-  async findAll(@Payload() _id: string, @Ctx() ctx: RmqContext) {
+  async findAll(@Payload(IdValidationPipe) _id: string, @Ctx() ctx: RmqContext) {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
@@ -53,14 +55,12 @@ export class CategoryController {
 
   @MessagePattern('update-category')
   @UsePipes(ValidationPipe)
-  async updateCategory(@Payload() data: any, @Ctx() ctx: RmqContext) {
+  async updateCategory(@Payload() updateDto: UpdateCategoryDto, @Ctx() ctx: RmqContext) {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
     try {
-      const { _id } = data
-      const category: Category = data.category
-      await this.categoryService.updateCategory(_id, category)
+      await this.categoryService.updateCategory(updateDto)
       await channel.ack(originalMessage)
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
