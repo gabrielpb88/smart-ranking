@@ -24,11 +24,19 @@ services:
 
   api-gateway:
     build:
-      context: ./api-gateway
+      context: ./sm-api-gateway
     container_name: api_gateway
     restart: always
     ports:
       - "3000:3000"
+    depends_on:
+      - admin-backend
+
+  admin-backend:
+    build:
+      context: ./sm-admin-backend
+    container_name: admin-backend
+    restart: always
     depends_on:
       - rabbitmq
       - mongodb
