@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Category } from './interface/category.interface';
 import { RpcException } from '@nestjs/microservices';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { isMongoId } from 'class-validator';
 
 @Injectable()
 export class CategoryService {
@@ -32,6 +33,9 @@ export class CategoryService {
   }
 
   async findById(_id: string): Promise<Category | null> {
+    if(!isMongoId(_id)){
+      throw new RpcException('Invalid id format')
+    }
     try {
       return this.categoryModel.findById(_id)
     } catch (error) {
@@ -40,10 +44,10 @@ export class CategoryService {
     }
   }
 
-  async updateCategory(updateDto: UpdateCategoryDto): Promise<void> {
+  async updateCategory(updateDto: UpdateCategoryDto): Promise<Category | null> {
     try {
       const { _id } = updateDto
-      await this.categoryModel.findByIdAndUpdate({ _id }, { $set: updateDto }).exec() 
+      return await this.categoryModel.findByIdAndUpdate({ _id }, { $set: updateDto }).exec() 
     } catch (error) {
       this.logger.error(`error: ${JSON.stringify(error.message)}`)
       throw new RpcException(error.message)      

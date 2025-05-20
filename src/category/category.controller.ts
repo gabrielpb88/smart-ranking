@@ -4,6 +4,7 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Logger } from '@nestjs/common';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Category } from './interface/category.interface';
 
 @Controller()
 export class CategoryController {
@@ -13,7 +14,7 @@ export class CategoryController {
 
   @MessagePattern('create-category')
   @UsePipes(ValidationPipe)
-  async create(@Payload() createCategoryDto: CreateCategoryDto, @Ctx() ctx: RmqContext) {
+  async create(@Payload() createCategoryDto: CreateCategoryDto, @Ctx() ctx: RmqContext): Promise<Category> {
 
     this.logger.log(`data: ${JSON.stringify(createCategoryDto)}`)
 
@@ -21,16 +22,18 @@ export class CategoryController {
     const originalMessage = ctx.getMessage();
 
     try {
-      await this.categoryService.create(createCategoryDto);
-      await channel.ack(originalMessage); 
+      const createdCAtegory = await this.categoryService.create(createCategoryDto);
+      await channel.ack(originalMessage);
+      return createdCAtegory 
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
       await channel.nack(originalMessage, false, false);
+      throw new RpcException(error.message)
     }
   }
 
   @MessagePattern('find-category')
-  async find(@Payload() _id: string | null, @Ctx() ctx: RmqContext) {
+  async find(@Payload() _id: string | null, @Ctx() ctx: RmqContext):Promise<Category[] | Category> {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
@@ -47,22 +50,24 @@ export class CategoryController {
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
       await channel.nack(originalMessage, false, false);
-      throw new RpcException('Invalid ObjectId');
+      throw new RpcException(error.message);
     }
   }
 
   @MessagePattern('update-category')
   @UsePipes(ValidationPipe)
-  async updateCategory(@Payload() updateDto: UpdateCategoryDto, @Ctx() ctx: RmqContext) {
+  async updateCategory(@Payload() updateDto: UpdateCategoryDto, @Ctx() ctx: RmqContext):Promise<Category | null> {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
     try {
-      await this.categoryService.updateCategory(updateDto)
+      const updatedCategory = await this.categoryService.updateCategory(updateDto)
       await channel.ack(originalMessage)
+      return updatedCategory
     } catch (error) {
       this.logger.error(`Error processing message: ${error.message}`);
       await channel.nack(originalMessage, false, false);
+      throw new RpcException(error.message)
     }
   }
 }
