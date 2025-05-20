@@ -1,0 +1,6 @@
+[submodule "sm-admin-backend"]
+	path = sm-admin-backend
+	url = git@github.com:gabrielpb88/sm-admin-backend.git
+[submodule "sm-api-gateway"]
+	path = sm-api-gateway
+	url = git@github.com:gabrielpb88/sm-api-gateway.git
