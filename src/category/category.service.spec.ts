@@ -3,7 +3,6 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Category } from './interface/category.interface';
 import { RpcException } from '@nestjs/microservices';
-import { Logger } from '@nestjs/common';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 describe('CategoryService', () => {

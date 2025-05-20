@@ -3,8 +3,6 @@ import { Payload, RmqContext, Ctx, MessagePattern, RpcException } from '@nestjs/
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { Logger } from '@nestjs/common';
-import { Category } from './interface/category.interface';
-import { IdValidationPipe } from 'src/common/pipes/id-validation.pipe';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Controller()
@@ -32,7 +30,7 @@ export class CategoryController {
   }
 
   @MessagePattern('find-category')
-  async findAll(@Payload(IdValidationPipe) _id: string, @Ctx() ctx: RmqContext) {
+  async find(@Payload() _id: string | null, @Ctx() ctx: RmqContext) {
     const channel = ctx.getChannelRef();
     const originalMessage = ctx.getMessage();
 
