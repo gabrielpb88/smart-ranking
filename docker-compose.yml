@@ -40,6 +40,18 @@ services:
     depends_on:
       - rabbitmq
       - mongodb
+  
+  challenge:
+    build:
+      context: ./sm-challenge
+    container_name: challenge
+    restart: always
+    volumes:
+      - ./sm-challenge:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - rabbitmq
+      - mongodb
 
 volumes:
   mongodb_data:

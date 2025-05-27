@@ -4,3 +4,6 @@
 [submodule "sm-api-gateway"]
 	path = sm-api-gateway
 	url = git@github.com:gabrielpb88/sm-api-gateway.git
+[submodule "sm-challenge"]
+	path = sm-challenge
+	url = git@github.com:gabrielpb88/sm-challenge.git
